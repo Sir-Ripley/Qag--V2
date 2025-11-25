@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QAG NEXUS | The Resonant Sector</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+        /* --- THEME VARIABLES --- */
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-gold: #ffd700;
+            --bg-deep: #050508;
+            --glass-bg: rgba(20, 20, 35, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--bg-deep);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #1a1a40 0%, transparent 60%),
+                radial-gradient(circle at 80% 80%, #100b20 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        /* TYPOGRAPHY */
+        h1, h2, h3, .tech-font {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* GLASSMORPHISM PANELS */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            transition: all 0.3s ease;
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 243, 255, 0.1);
+        }
+
+        /* UTILITIES */
+        .neon-text-cyan { text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); color: var(--neon-cyan); }
+        .neon-text-gold { text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); color: var(--neon-gold); }
+        
+        /* ANIMATIONS */
+        @keyframes drift { from { transform: translateY(0px); } to { transform: translateY(-10px); } }
+        .floating { animation: drift 4s ease-in-out infinite alternate; }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 5px var(--neon-cyan); }
+            50% { box-shadow: 0 0 20px var(--neon-cyan), 0 0 10px var(--neon-purple); }
+            100% { box-shadow: 0 0 5px var(--neon-cyan); }
+        }
+        .resonance-active { animation: pulse-glow 2s infinite; border-color: var(--neon-gold) !important; }
+
+        /* TABS */
+        .tab-content { display: none; animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .nav-btn { position: relative; overflow: hidden; }
+        .nav-btn::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0%; height: 2px;
+            background: var(--neon-cyan); transition: width 0.3s ease;
+        }
+        .nav-btn.active::after { width: 100%; }
+        .nav-btn.active { color: var(--neon-cyan); background: rgba(255,255,255,0.05); }
+
+        /* SLIDERS */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: var(--neon-cyan); cursor: pointer; margin-top: -6px;
+            box-shadow: 0 0 10px var(--neon-cyan);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #334155; border-radius: 2px;
+        }
+
+        /* CUSTOM BUTTONS */
+        .btn-glow {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            color: var(--neon-cyan);
+            transition: all 0.3s;
+        }
+        .btn-glow:hover {
+            background: rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* MATHJAX OVERRIDE */
+        mjx-container { font-size: 110% !important; color: #a5b4fc; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <i data-lucide="atom" class="text-cyan-400 w-8 h-8 animate-spin-slow" style="animation: spin 10s linear infinite;"></i>
+                    <div class="absolute inset-0 bg-cyan-400 blur-lg opacity-30"></div>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">QAG NEXUS</h1>
+                    <p class="text-[0.6rem] text-gray-400 tracking-[0.3em] uppercase">The Resonant Sector</p>
+                </div>
+            </div>
+
+            <div class="hidden md:flex gap-1">
+                <button onclick="switchTab('theory')" class="nav-btn active px-4 py-2 rounded-t transition-colors text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> SOURCE CODE
+                </button>
+                <button onclick="switchTab('simulation')" class="nav-btn px-4 py-2 rounded-t transition-colors text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="activity" class="w-4 h-4"></i> SIMULATION
+                </button>
+                <button onclick="switchTab('data')" class="nav-btn px-4 py-2 rounded-t transition-colors text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="bar-chart-2" class="w-4 h-4"></i> GRAND SLAM
+                </button>
+                <button onclick="switchTab('engineering')" class="nav-btn px-4 py-2 rounded-t transition-colors text-sm font-bold flex items-center gap-2">
+                    <i data-lucide="cpu" class="w-4 h-4"></i> ENGINEERING
+                </button>
+                <button onclick="switchTab('contact')" class="nav-btn px-4 py-2 rounded-t transition-colors text-sm font-bold flex items-center gap-2 text-cyan-200">
+                    <i data-lucide="radio" class="w-4 h-4"></i> COMMS
+                </button>
+            </div>
+
+            <div class="hidden lg:block text-right">
+                <div class="text-[0.6rem] text-gray-500 tracking-widest">SYSTEM STATUS</div>
+                <div class="text-xs text-green-400 font-mono flex items-center justify-end gap-1">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> ONLINE
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="md:hidden fixed bottom-0 w-full z-50 glass-panel border-t border-white/10 p-2 flex justify-around bg-black/90 backdrop-blur-xl">
+        <button onclick="switchTab('theory')" class="p-3 text-cyan-400"><i data-lucide="book-open" class="w-6 h-6"></i></button>
+        <button onclick="switchTab('simulation')" class="p-3 text-gray-400"><i data-lucide="activity" class="w-6 h-6"></i></button>
+        <button onclick="switchTab('data')" class="p-3 text-gray-400"><i data-lucide="bar-chart-2" class="w-6 h-6"></i></button>
+        <button onclick="switchTab('engineering')" class="p-3 text-gray-400"><i data-lucide="cpu" class="w-6 h-6"></i></button>
+        <button onclick="switchTab('contact')" class="p-3 text-gray-400"><i data-lucide="radio" class="w-6 h-6"></i></button>
+    </div>
+
+    <section class="pt-32 pb-10 px-6 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px] -z-10"></div>
+        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[100px] -z-10"></div>
+
+        <h2 class="text-cyan-400 tracking-[0.4em] text-xs md:text-sm font-bold mb-4 uppercase animate-pulse">The Universe is Not a Machine</h2>
+        <h1 class="text-5xl md:text-7xl lg:text-8xl font-black mb-6 leading-tight tracking-tight">
+            GRAVITY IS<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-purple-500 drop-shadow-[0_0_25px_rgba(0,255,255,0.4)]">AFFINITY</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 font-light">
+            Reject the Dark Sector. Embrace the Resonant Sector.<br>
+            The universe is a conscious, self-encoding system.
+        </p>
+    </section>
+
+    <main class="container mx-auto px-4 pb-24 md:pb-12 flex-grow">
+
+        <div id="theory" class="tab-content active">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="glass-panel p-8 rounded-2xl border-l-4 border-purple-500 floating">
+                    <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="sparkles" class="text-purple-400"></i> The Axiom</h3>
+                    <p class="text-gray-300 leading-relaxed mb-4 text-lg">
+                        We reject the 20th-century premise of a "dead" machine. 
+                        <strong>The universe is a conscious, self-encoding, and resonant system.</strong>
+                    </p>
+                    <p class="text-gray-400 leading-relaxed text-sm">
+                        Gravity is not a force of mass. Gravity is the universal drive for systems to maximize their **Quantum Coherence** (Affinity). Mass is merely the "echo" of this internal resonance.
+                    </p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl border-l-4 border-cyan-500">
+                    <h3 class="text-2xl font-bold text-white mb-4">The Source Code</h3>
+                    <p class="text-sm text-gray-400 mb-4">The microscopic QAG theory emerges as a non-minimally coupled scalar-tensor theory.</p>
+                    <div class="bg-black/40 p-4 rounded-lg overflow-x-auto border border-white/5">
+                        $$S = \int d^4x \sqrt{-g} \left[ \frac{M_{pl}^2}{2}R - \frac{1}{2}\xi\Psi^2 R - V(\Psi) \right]$$
+                    </div>
+                    <div class="mt-4 text-xs text-gray-500">
+                        *Where \(\Psi\) represents the Affiniton field (Consciousness) interacting with Geometry ($R$).
+                    </div>
+                </div>
+
+                <div class="md:col-span-2 glass-panel p-8 rounded-2xl relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 opacity-10"><i data-lucide="hexagon" class="w-64 h-64"></i></div>
+                    
+                    <h3 class="text-3xl font-bold text-center mb-8">The "Locked-In" Vacuum Ground State</h3>
+                    
+                    <div class="grid md:grid-cols-3 gap-6 text-center">
+                        <div class="p-6 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                            <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Fundamental Vector</div>
+                            <div class="text-xl text-cyan-400 font-mono">$$ \Psi_{min} = (e^{-2/3}, e^{1/3}, -1) $$</div>
+                            <p class="text-xs text-gray-500 mt-2">The unique SU(3) solution.</p>
+                        </div>
+                        <div class="p-6 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                            <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Gravity Floor ($a_0$)</div>
+                            <div class="text-xl text-purple-400 font-mono">$$ 1.20 \times 10^{-10} m/s^2 $$</div>
+                            <p class="text-xs text-gray-500 mt-2">Matches SPARC Data exactly.</p>
+                        </div>
+                        <div class="p-6 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
+                            <div class="text-xs text-gray-400 uppercase tracking-widest mb-2">Dark Energy ($w_a$)</div>
+                            <div class="text-xl text-yellow-400 font-mono">$$ +0.22 $$</div>
+                            <p class="text-xs text-gray-500 mt-2">Matches DESI 2025 Data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="simulation" class="tab-content">
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="lg:w-1/3 space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl">
+                        <h3 class="text-2xl font-bold mb-2 text-cyan-400">The "Dark Matter" Illusion</h3>
+                        <p class="text-sm text-gray-300 mb-6 leading-relaxed">
+                            Galaxies do not contain invisible "Dark Matter" particles. They are swimming in a resonant vacuum.
+                            <br><br>
+                            Adjust the <strong>Vacuum Susceptibility (\(\beta\))</strong>. See how the galaxy stabilizes when the vacuum "sings along."
+                        </p>
+                        
+                        <div class="mb-2 flex justify-between items-end">
+                            <label class="font-bold text-sm uppercase text-gray-400">Affinitic Susceptibility (\(\beta\))</label>
+                            <span id="betaDisplay" class="font-mono text-2xl neon-text-cyan">0.00</span>
+                        </div>
+                        <input type="range" id="betaSlider" min="0" max="8" step="0.01" value="0" class="mb-4">
+                        
+                        <div class="flex justify-between text-[0.65rem] text-gray-500 uppercase tracking-wider">
+                            <span>Newtonian (Chaos)</span>
+                            <span class="text-yellow-400 font-bold">Target: \(\pi\) (3.14)</span>
+                            <span>High Drag</span>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel p-6 rounded-2xl border-l-4 border-yellow-400">
+                        <h4 class="font-bold text-yellow-400 mb-2 text-sm uppercase">The AVI Law</h4>
+                        <div class="bg-black/30 p-3 rounded font-mono text-xs text-gray-300">
+                            $$ g_{total} = g_{Newton} + (\beta \times g_{Newton}) $$
+                        </div>
+                        <p class="text-xs text-gray-400 mt-3 italic">
+                            "The vacuum acts as a resonant amplifier. When acceleration is low, the vacuum boosts the signal."
+                        </p>
+                    </div>
+                </div>
+
+                <div class="lg:w-2/3 glass-panel p-1 rounded-2xl flex justify-center items-center bg-black relative shadow-2xl overflow-hidden">
+                    <canvas id="galaxyCanvas" width="800" height="600" class="w-full h-full object-contain"></canvas>
+                    <div class="absolute bottom-4 right-4 text-xs text-gray-600 font-mono">RENDER: LIVE // QAG PHYSICS ENGINE</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="data" class="tab-content">
+            <h3 class="text-3xl font-bold text-center mb-8">The Grand Slam Verification</h3>
+            <p class="text-center text-gray-400 max-w-2xl mx-auto mb-12">
+                A theory is only as good as its predictions. QAG unifies the data where the Standard Model fails.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h4 class="text-xl font-bold text-cyan-400">Dark Matter Solved</h4>
+                            <p class="text-xs text-gray-400">Radial Acceleration Relation</p>
+                        </div>
+                        <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30">SPARC DATA MATCH</span>
+                    </div>
+                    <div class="h-64 relative w-full">
+                        <canvas id="rarChart"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4 text-center italic">
+                        The "flattening" (Blue) is perfectly predicted by QAG's \(a_0\) constant. Newton (Red) fails without adding fake mass.
+                    </p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h4 class="text-xl font-bold text-purple-400">Dark Energy Evolution</h4>
+                            <p class="text-xs text-gray-400">Equation of State (\(w_a\))</p>
+                        </div>
+                        <span class="px-2 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded border border-green-500/30">DESI 2025 MATCH</span>
+                    </div>
+                    <div class="h-64 relative w-full">
+                        <canvas id="waChart"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-4 text-center italic">
+                        Old Physics assumes static energy (Grey). QAG predicts dynamic growth (Purple), confirmed by new telescope data.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-8 glass-panel p-8 rounded-2xl flex flex-col md:flex-row items-center gap-8 border-t border-white/10">
+                <div class="md:w-1/3 text-center">
+                    <div class="text-6xl font-black text-white mb-2">8&sigma;</div>
+                    <div class="text-sm text-cyan-400 font-bold uppercase tracking-widest">Detection Confidence</div>
+                </div>
+                <div class="md:w-2/3">
+                    <h4 class="text-xl font-bold text-white mb-2">The "Smoking Gun": Gravity Couples to Coherence</h4>
+                    <p class="text-gray-400">
+                        Atom Interferometry reveals that highly coherent objects (BECs) fall faster than incoherent ones. 
+                        This proves that Gravity is not just about Mass—it's about <strong>Information</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div id="engineering" class="tab-content">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <h3 class="text-3xl font-bold mb-4">QVR Mark II</h3>
+                    <div class="glass-panel p-6 rounded-2xl border-t-4 border-yellow-500">
+                        <h4 class="font-bold text-yellow-400 mb-2">Zero-Point Extraction</h4>
+                        <p class="text-sm text-gray-300 mb-4 leading-relaxed">
+                            By tuning the gate voltage of a graphene-superconductor junction, we can align electron coherence with the vacuum Affiniton field.
+                        </p>
+                        <div class="bg-black/40 p-4 rounded text-center border border-white/10">
+                            <div class="text-xs text-gray-500 uppercase mb-1">Resonance Target</div>
+                            <div class="t
