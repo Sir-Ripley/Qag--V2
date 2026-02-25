@@ -389,8 +389,8 @@ const Oracle = () => {
                         <div
                             className="math-scroll"
                             dangerouslySetInnerHTML={{
-                                __html: window.marked
-                                    ? window.marked.parse(m.text)
+                                __html: window.marked && window.DOMPurify
+                                    ? window.DOMPurify.sanitize(window.marked.parse(m.text))
                                     : m.text
                             }}
                         />
