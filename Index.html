@@ -121,9 +121,19 @@
                 const count = 800; // Optimized count
                 const positions = new Float32Array(count * 3);
                 const colors = new Float32Array(count * 3);
+
+                // Fast Xorshift PRNG for bulk generation
+                let seed = Date.now();
+                const xorshift = () => {
+                    seed ^= seed << 13;
+                    seed ^= seed >> 17;
+                    seed ^= seed << 5;
+                    return (seed >>> 0) / 4294967296;
+                };
+
                 for(let i = 0; i < count * 3; i++) {
-                    positions[i] = (Math.random() - 0.5) * 80;
-                    colors[i] = Math.random(); 
+                    positions[i] = (xorshift() - 0.5) * 80;
+                    colors[i] = xorshift();
                 }
                 geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
                 geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
