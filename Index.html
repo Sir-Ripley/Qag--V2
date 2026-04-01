@@ -119,9 +119,10 @@
 
                 const geometry = new THREE.BufferGeometry();
                 const count = 800; // Optimized count
-                const positions = new Float32Array(count * 3);
-                const colors = new Float32Array(count * 3);
-                for(let i = 0; i < count * 3; i++) {
+                const limit = count * 3;
+                const positions = new Float32Array(limit);
+                const colors = new Float32Array(limit);
+                for(let i = 0; i < limit; i++) {
                     positions[i] = (Math.random() - 0.5) * 80;
                     colors[i] = Math.random(); 
                 }
