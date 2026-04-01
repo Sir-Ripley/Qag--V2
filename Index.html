@@ -178,14 +178,18 @@
             const [input, setInput] = useState('');
             const [loading, setLoading] = useState(false);
             const scrollRef = useRef(null);
+            const cacheRef = useRef(new Map());
 
             useEffect(() => scrollRef.current?.scrollIntoView({behavior:'smooth'}), [msgs]);
             useEffect(() => { if(window.MathJax) window.MathJax.typesetPromise(); }, [msgs]);
 
             const fetchGemini = async (prompt) => {
+                setModelName("Gemini 2.0 Flash");
+                if (cacheRef.current.has(prompt)) {
+                    return cacheRef.current.get(prompt);
+                }
                 const payload = { contents:[{parts:[{text:prompt}]}], systemInstruction:{parts:[{text:QAG_SYSTEM_PROMPT}]} };
                 try {
-                    setModelName("Gemini 2.0 Flash");
                     // UPDATED ENDPOINT TO 2.0-FLASH
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
                         method: 'POST', 
@@ -198,6 +202,7 @@
                     if (d.error) {
                         throw new Error(d.error.message);
                     }
+                    cacheRef.current.set(prompt, d);
                     return d;
                 } catch (e) {
                     setModelName("Connection Error");
